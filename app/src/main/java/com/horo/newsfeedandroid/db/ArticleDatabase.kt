@@ -1,0 +1,33 @@
+package com.horo.newsfeedandroid.db
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room.databaseBuilder
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.horo.newsfeedandroid.models.Article
+
+@Database(entities = [Article::class], version = 1)
+@TypeConverters(SourceConverter::class)
+abstract class ArticleDatabase : RoomDatabase() {
+    abstract fun articleDao(): ArticleDao
+
+    companion object {
+        private var instance: ArticleDatabase? = null
+        private val LOCK = Any()
+
+        operator fun invoke(context: Context): ArticleDatabase {
+            return instance ?: synchronized(LOCK) {
+                instance ?: createDatabase(context).also { instance = it }
+            }
+        }
+
+        private fun createDatabase(context: Context): ArticleDatabase {
+            return databaseBuilder(
+                context.applicationContext,
+                ArticleDatabase::class.java,
+                "article_db.db"
+            ).build()
+        }
+    }
+}
